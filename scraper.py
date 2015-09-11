@@ -1,82 +1,98 @@
 from bs4 import BeautifulSoup as bs
 import urllib2
-import sys
+import json
 
 
-def make_games(table):
-    x = [i for i in table.tbody.find_all('tr') if i.attrs == {}]
-    games = []
-    a_game = None
-    away = None
-    for m, i in enumerate(x):
-        if m % 2 == 0:
-            a_game = {}
-            away = i.contents
-        else:
-            games.append(new_game(away, i.contents))
-    return games
+class odd_scraper:
 
-def parse_it(a, h, ch, d):
-    f=min(a,h)
-    try:
-        a = float(a)
-        h = float(h)
-        if a == max(a, h):
-            d[ch+'_fav'] = d['home']
+    def __init__(self):
+        url1 = 'http://www.scoresandodds.com/pfootballschedule_20140908_20180915_thisweek.html?sort=rot'
+        soup = bs(urllib2.urlopen(url1).read())
+
+        q = soup.find(id='contents')
+        w = q.find(class_='section')
+        r = [i for i in w.contents if i != '\n']
+        self.k = {}
+        gd = None
+        league = None
+
+        for i in r:
+            if 'class' in i.attrs:
+                s = i.text.split()
+                gd = s[0]
+                league = s[1]
+                if league not in self.k:
+                    self.k[league] = {gd: []}
+                else:
+                    self.k[league][gd] = []
+            else:
+                self.k[league][gd] = self.make_games(i)
+
+    def make_games(self, table):
+        x = [i for i in table.tbody.find_all('tr') if i.attrs == {}]
+        games = []
+        a_game = None
+        away = None
+        for m, i in enumerate(x):
+            if m % 2 == 0:
+                a_game = {}
+                away = i.contents
+            else:
+                games.append(self.new_game(away, i.contents))
+        return games
+
+    def parse_it(self, a, h, ch, d):
+        f = min(a, h)
+        if a == min(a, h):
+            d[ch + '_fav'] = d['away']
         else:
-            d[ch+'_fav'] = d['away']
-        d[ch+'_line'] = min(a, h)
-    except ValueError:
-        if a == 'PK' or h =='PK':
-            d[ch+'_fav'] = 'Pick em'
-            d[ch+'o_line'] = 0
-        else:
-            if a[0]=='-':
+            d[ch + '_fav'] = d['home']
+
+        try:
+            f = float(f)
+            d[ch + '_line'] = f
+            d[ch + '_fav_vig'] = -110
+        except ValueError:
+            if f == 'PK':
+                d[ch + '_fav'] = 'Pick'
+                d[ch + 'o_line'] = 0
+            else:
+                w = f.split(' ')
+                d[ch + '_line'] = float(w[0])
                 try:
-                    int(a)
-                except Value
-            print "Away", a
-            print "home", h
-    return d
-
-def new_game(away, home):
-    d = {}
-    d['away'] = away[1].text.strip()[4:]
-    d['home'] = home[1].text.strip()[4:]
-    a2 = away[2].text.strip()
-    h2 = home[2].text.strip()
-    a4 = away[4].text.strip()
-    h4 = home[4].text.strip()
-    a5 = away[5].text.strip()
-    h5 = home[5].text.strip()
-    if a2 == '':
+                    d[ch + '_fav_vig'] = float(w[1]) - 100
+                except ValueError:
+                    if w[1] == 'EVEN':
+                        d[ch + '_fav_vig'] = -100
         return d
-    d = parse_it(a2, h2, 'o', d)
-    d = parse_it (a4, h4, 'c', d)
 
-    return d
+    def new_game(self, away, home):
+        d = {}
+        d['away'] = away[1].text.strip()[4:]
+        d['home'] = home[1].text.strip()[4:]
+        a2 = away[2].text.strip()
+        h2 = home[2].text.strip()
+        a4 = away[4].text.strip()
+        h4 = home[4].text.strip()
+        #a5 = away[5].text.strip() //moneyline
+        #h5 = home[5].text.strip() //moneyline
+        if a2 == '':
+            return d
+        d = self.parse_it(a2, h2, 'o', d)
+        d = self.parse_it(a4, h4, 'c', d)
 
-url1 = 'http://www.scoresandodds.com/pfootballschedule_20140908_20180915_thisweek.html?sort=rot'
-soup = bs(urllib2.urlopen(url1).read())
+        return d
 
-q = soup.find(id='contents')
-w = q.find(class_='section')
-r = [i for i in w.contents if i != '\n']
-k = {}
-gd = None
-league = None
+    def to_json_file(self, direct=''):
+        with open(direct+'lines.json', 'w') as f:
+            json.dump(self.k, f, sort_keys=True, indent=4,
+                separators=(',', ': '))
 
-for i in r:
-    if 'class' in i.attrs:
-        s = i.text.split()
-        gd = s[0]
-        league = s[1]
-        if league not in k:
-            k[league] = {gd: []}
-        else:
-            k[league][gd] = []
-    else:
-        k[league][gd] = make_games(i)
+    def to_json_string(self):
+        return json.dumps(self.k)
+
+if __name__ == "__main__":
+    scraper = odd_scraper()
 
 
 # All data sourced from scoresandodds.com this script and its creator makes no
