@@ -29,13 +29,11 @@ class odd_scraper:
                 self.k[league][gd] = self.make_games(i)
 
     def make_games(self, table):
-        x = [i for i in table.tbody.find_all('tr') if i.attrs == {}]
+        x = [i.parent for i in table.tbody.find_all(class_='teamName')]
         games = []
-        a_game = None
         away = None
         for m, i in enumerate(x):
             if m % 2 == 0:
-                a_game = {}
                 away = i.contents
             else:
                 games.append(self.new_game(away, i.contents))
