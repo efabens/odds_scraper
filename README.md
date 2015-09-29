@@ -1,4 +1,6 @@
 # odds_scraper
+
+The HTML formatting has changed and the scraper is no longer functioning.
 Scrapes for football odds
 
 ##Requirements
