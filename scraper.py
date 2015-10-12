@@ -1,13 +1,14 @@
 from bs4 import BeautifulSoup as bs
 import urllib2
 import json
+import re
 
 
 class odd_scraper:
 
     def __init__(self):
         url1 = 'http://www.scoresandodds.com/pfootballschedule_20140908_20180915_thisweek.html?sort=rot'
-        soup = bs(urllib2.urlopen(url1).read())
+        soup = bs(urllib2.urlopen(url1).read(), "html5lib")
 
         q = soup.find(id='contents')
         w = q.find(class_='section')
@@ -41,6 +42,12 @@ class odd_scraper:
 
     def parse_it(self, a, h, ch, d):
         f = min(a, h)
+        if f == '':
+            f = max(a,h)
+            if a == max(a, h):
+                h = '99'
+            else:
+                a = '99'
         if a == min(a, h):
             d[ch + '_fav'] = d['away']
         else:
@@ -53,10 +60,16 @@ class odd_scraper:
         except ValueError:
             if f == 'PK':
                 d[ch + '_fav'] = 'Pick'
-                d[ch + 'o_line'] = 0
+                d[ch + '_line'] = 0
             else:
-                w = f.split(' ')
-                d[ch + '_line'] = float(w[0])
+                w = re.split('\s|o',f)
+                try:
+                    d[ch + '_line'] = float(w[0])
+                except ValueError:
+                    print w
+                    print f==''
+                    print ch
+                    print d
                 try:
                     d[ch + '_fav_vig'] = float(w[1]) - 100
                 except ValueError:
@@ -89,8 +102,23 @@ class odd_scraper:
     def to_json_string(self):
         return json.dumps(self.k)
 
+    def print_it(self, league):
+        for i in sorted([i for i in self.k[league]]):
+            print i
+            for j in self.k[league][i]:
+                q=j['away'].title()+' at '+j['home'].title()
+                if j.has_key('c_fav'):
+                    g=j['c_fav'].title() +' '+ str(j['c_line'])
+                else:
+                    g='no line'
+                print q+': '+g
+
+
+
 if __name__ == "__main__":
     scraper = odd_scraper()
+    scraper.print_it('NFL')
+
 
 
 # All data sourced from scoresandodds.com this script and its creator makes no
