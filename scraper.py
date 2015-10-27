@@ -8,7 +8,7 @@ class odd_scraper:
 
     def __init__(self):
         url1 = 'http://www.scoresandodds.com/pfootballschedule_20140908_20180915_thisweek.html?sort=rot'
-        soup = bs(urllib2.urlopen(url1).read(), "html5lib")
+        soup = bs(urllib2.urlopen(url1).read())
 
         q = soup.find(id='contents')
         w = q.find(class_='section')
@@ -41,6 +41,10 @@ class odd_scraper:
         return games
 
     def parse_it(self, a, h, ch, d):
+        if 'PK' in [a, h]:
+                d[ch + '_fav'] = 'Pick'
+                d[ch + '_line'] = 0
+                return d
         f = min(a, h)
         if f == '':
             f = max(a,h)
@@ -58,23 +62,19 @@ class odd_scraper:
             d[ch + '_line'] = f
             d[ch + '_fav_vig'] = -110
         except ValueError:
-            if f == 'PK':
-                d[ch + '_fav'] = 'Pick'
-                d[ch + '_line'] = 0
-            else:
-                w = re.split('\s|o',f)
-                try:
-                    d[ch + '_line'] = float(w[0])
-                except ValueError:
-                    print w
-                    print f==''
-                    print ch
-                    print d
-                try:
-                    d[ch + '_fav_vig'] = float(w[1]) - 100
-                except ValueError:
-                    if w[1] == 'EVEN':
-                        d[ch + '_fav_vig'] = -100
+            w = re.split('\s|o',f)
+            try:
+                d[ch + '_line'] = float(w[0])
+            except ValueError:
+                print w
+                print f==''
+                print ch
+                print d
+            try:
+                d[ch + '_fav_vig'] = float(w[1]) - 100
+            except ValueError:
+                if w[1] == 'EVEN':
+                    d[ch + '_fav_vig'] = -100
         return d
 
     def new_game(self, away, home):
