@@ -8,33 +8,31 @@ from datetime import datetime
 class odd_scraper:
 
     def __init__(self):
-        url1 = 'http://www.scoresandodds.com/pfootballschedule_20140908_20180915_thisweek.html?sort=rot'
+        d = datetime.now().strftime("%Y%m%d")
+        url1 = 'http://www.scoresandodds.com/pgrid_20151126.html?sort=rot'
         try:
             soup = bs(urllib2.urlopen(url1).read(),'html5lib')
         except:
-            soup = bs(urllib2.urlopen(url1).read(),'html5lib')
+            soup = bs(urllib2.urlopen(url1).read())
 
         q = soup.find(id='contents')
-        w = q.find(class_='section')
-        r = [i for i in w.contents if i != '\n']
+        w = q.find_all(class_='section')
         self.k = {}
         gd = None
         league = None
 
-        for i in r:
-            if 'class' in i.attrs:
-                s = i.text.split()
-                gd = s[0]
-                league = s[1]
-                if league not in self.k:
-                    self.k[league] = {gd: []}
-                else:
-                    self.k[league][gd] = []
+        for i in w:
+            league = i.find(class_='league').text
+            gd = i.find(class_='date').text
+            if league not in self.k:
+                self.k[league] = {gd: []}
             else:
-                self.k[league][gd] = self.make_games(i)
+                self.k[league][gd] = []
+            self.k[league][gd] = self.make_games(i.find('table'))
 
     def make_games(self, table):
         x = [i.parent for i in table.tbody.find_all(class_='teamName')]
+        print x[0]
         games = []
         away = None
         for m, i in enumerate(x):
@@ -83,18 +81,18 @@ class odd_scraper:
 
     def new_game(self, away, home):
         d = {}
-        d['away'] = away[1].text.strip()[4:]
-        d['home'] = home[1].text.strip()[4:]
-        a2 = away[2].text.strip()
-        h2 = home[2].text.strip()
-        a4 = away[4].text.strip()
-        h4 = home[4].text.strip()
+        d['away'] = re.match("\d+ ([a-zA-Z ]*)",(away[0].text)).group(1)
+        d['home'] = re.match("\d+ ([a-zA-Z ]*)",(home[0].text)).group(1)
+        away_op = away[1].text.strip()
+        home_op = home[1].text.strip()
+        away_cur = away[3].text.strip()
+        home_cur = home[3].text.strip()
         #a5 = away[5].text.strip() //moneyline
         #h5 = home[5].text.strip() //moneyline
-        if a2 == '':
+        if away_op == '':
             return d
-        d = self.parse_it(a2, h2, 'o', d)
-        d = self.parse_it(a4, h4, 'c', d)
+        d = self.parse_it(away_op, home_op, 'o', d)
+        d = self.parse_it(away_cur, home_cur, 'c', d)
 
         return d
 
@@ -121,8 +119,8 @@ class odd_scraper:
 
 if __name__ == "__main__":
     scraper = odd_scraper()
-    scraper.print_it('NFL')
-    scraper.to_json_file(direct = datetime.now().strftime("%Y_%m_%d_%H_%m"))
+    # scraper.print_it('NFL')
+    # scraper.to_json_file(direct = datetime.now().strftime("%Y_%m_%d_%H_%m"))
 
 
 
