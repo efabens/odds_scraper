@@ -8,11 +8,13 @@ from datetime import datetime
 class football_scraper:
 
     def __init__(self):
-        url1 = 'http://www.scoresandodds.com/pfootballschedule_20140908_20180915_thisweek.html?sort=rot'
+        url1 = (
+            'http://www.scoresandodds.com/pfootballschedule_20140908_'
+            '20180915_thisweek.html?sort=rot')
         try:
-            soup = bs(urllib2.urlopen(url1).read(),'html5lib')
+            soup = bs(urllib2.urlopen(url1).read(), 'html5lib')
         except:
-            soup = bs(urllib2.urlopen(url1).read(),'html5lib')
+            soup = bs(urllib2.urlopen(url1).read(), 'html5lib')
 
         q = soup.find(id='contents')
         w = q.find(class_='section')
@@ -51,7 +53,7 @@ class football_scraper:
                 return d
         f = min(a, h)
         if f == '':
-            f = max(a,h)
+            f = max(a, h)
             if a == max(a, h):
                 h = '99'
             else:
@@ -66,12 +68,12 @@ class football_scraper:
             d[ch + '_line'] = f
             d[ch + '_fav_vig'] = -110
         except ValueError:
-            w = re.split('\s|o',f)
+            w = re.split('\s|o', f)
             try:
                 d[ch + '_line'] = float(w[0])
             except ValueError:
                 print w
-                print f==''
+                print f == ''
                 print ch
                 print d
             try:
@@ -89,8 +91,8 @@ class football_scraper:
         h2 = home[2].text.strip()
         a4 = away[4].text.strip()
         h4 = home[4].text.strip()
-        #a5 = away[5].text.strip() //moneyline
-        #h5 = home[5].text.strip() //moneyline
+        # a5 = away[5].text.strip() //moneyline
+        # h5 = home[5].text.strip() //moneyline
         if a2 == '':
             return d
         d = self.parse_it(a2, h2, 'o', d)
@@ -100,8 +102,8 @@ class football_scraper:
 
     def to_json_file(self, direct=''):
         with open('lines'+direct+'.json', 'w') as f:
-            json.dump(self.k, f, sort_keys=True, indent=4,
-                separators=(',', ': '))
+            json.dump(
+                self.k, f, sort_keys=True, indent=4, separators=(',', ': '))
 
     def to_json_string(self):
         return json.dumps(self.k)
@@ -110,21 +112,17 @@ class football_scraper:
         for i in sorted([i for i in self.k[league]]):
             print i
             for j in self.k[league][i]:
-                q=j['away'].title()+' at '+j['home'].title()
-                if j.has_key('c_fav'):
-                    g=j['c_fav'].title() +' '+ str(j['c_line'])
+                q = j['away'].title() + ' at ' + j['home'].title()
+                if 'c_fav' in j:
+                    g = j['c_fav'].title() + ' ' + str(j['c_line'])
                 else:
-                    g='no line'
-                print q+': '+g
-
-
+                    g = 'no line'
+                print q + ': ' + g
 
 if __name__ == "__main__":
     scraper = football_scraper()
     scraper.print_it('NFL')
-    scraper.to_json_file(direct = datetime.now().strftime("%Y_%m_%d_%H_%m"))
-
-
+    scraper.to_json_file(direct=datetime.now().strftime("%Y_%m_%d_%H_%m"))
 
 # All data sourced from scoresandodds.com this script and its creator makes no
 # claim of ownership.

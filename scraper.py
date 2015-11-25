@@ -12,7 +12,7 @@ class odd_scraper:
         url1 = 'http://www.scoresandodds.com/pgrid_%s.html?sort=rot' % d
 
         try:
-            soup = bs(urllib2.urlopen(url1).read(),'html5lib')
+            soup = bs(urllib2.urlopen(url1).read(), 'html5lib')
         except:
             soup = bs(urllib2.urlopen(url1).read())
 
@@ -44,12 +44,12 @@ class odd_scraper:
 
     def parse_it(self, a, h, ch, d):
         if 'PK' in [a, h]:
-                d[ch + '_fav'] = 'Pick'
-                d[ch + '_line'] = 0
-                return d
+            d[ch + '_fav'] = 'Pick'
+            d[ch + '_line'] = 0
+            return d
         f = min(a, h)
         if f == '':
-            f = max(a,h)
+            f = max(a, h)
             if a == max(a, h):
                 h = '99'
             else:
@@ -64,12 +64,12 @@ class odd_scraper:
             d[ch + '_line'] = f
             d[ch + '_fav_vig'] = -110
         except ValueError:
-            w = re.split('\s|o',f)
+            w = re.split('\s|o', f)
             try:
                 d[ch + '_line'] = float(w[0])
             except ValueError:
                 print w
-                print f==''
+                print f == ''
                 print ch
                 print d
             try:
@@ -81,14 +81,14 @@ class odd_scraper:
 
     def new_game(self, away, home):
         d = {}
-        d['away'] = re.match("\d+ ([a-zA-Z ]*)",(away[0].text)).group(1)
-        d['home'] = re.match("\d+ ([a-zA-Z ]*)",(home[0].text)).group(1)
+        d['away'] = re.match("\d+ ([a-zA-Z ]*)", (away[0].text)).group(1)
+        d['home'] = re.match("\d+ ([a-zA-Z ]*)", (home[0].text)).group(1)
         away_op = away[1].text.strip()
         home_op = home[1].text.strip()
         away_cur = away[3].text.strip()
         home_cur = home[3].text.strip()
-        #a5 = away[5].text.strip() //moneyline
-        #h5 = home[5].text.strip() //moneyline
+        # a5 = away[5].text.strip() //moneyline
+        # h5 = home[5].text.strip() //moneyline
         if away_op == '':
             return d
         d = self.parse_it(away_op, home_op, 'o', d)
@@ -97,8 +97,9 @@ class odd_scraper:
         return d
 
     def to_json_file(self, direct=''):
-        with open('lines'+direct+'.json', 'w') as f:
-            json.dump(self.k, f, sort_keys=True, indent=4,
+        with open('lines' + direct + '.json', 'w') as f:
+            json.dump(
+                self.k, f, sort_keys=True, indent=4,
                 separators=(',', ': '))
 
     def to_json_string(self):
@@ -108,20 +109,18 @@ class odd_scraper:
         for i in sorted([i for i in self.k[league]]):
             print i
             for j in self.k[league][i]:
-                q=j['away'].title()+' at '+j['home'].title()
-                if j.has_key('c_fav'):
-                    g=j['c_fav'].title() +' '+ str(j['c_line'])
+                q = j['away'].title() + ' at ' + j['home'].title()
+                if 'c_fav' in j:
+                    g = j['c_fav'].title() + ' ' + str(j['c_line'])
                 else:
-                    g='no line'
-                print q+': '+g
-
+                    g = 'no line'
+                print q + ': ' + g
 
 
 if __name__ == "__main__":
     scraper = odd_scraper()
     scraper.print_it('NBA')
-    scraper.to_json_file(direct = datetime.now().strftime("%Y_%m_%d_%H_%m"))
-
+    scraper.to_json_file(direct=datetime.now().strftime("%Y_%m_%d_%H_%m"))
 
 
 # All data sourced from scoresandodds.com this script and its creator makes no
