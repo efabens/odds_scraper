@@ -96,8 +96,17 @@ class odd_scraper:
 
         return d
 
-    def to_json_file(self, direct=''):
-        with open('lines' + direct + '.json', 'w') as f:
+    def to_json_file(self, direct='', stamp='', name='lines'):
+        """write lines dictionary as json file
+
+        Keyword Arguments:
+        direct -- directory to put file in, root is active folder and program
+        doesn't verify that directory exists or is valid. (default '')
+
+        stamp -- last portion of file naming scheme (default '')
+        name -- name of file (default 'lines')
+        """
+        with open(direct + name + stamp + '.json', 'w') as f:
             json.dump(
                 self.k, f, sort_keys=True, indent=4,
                 separators=(',', ': '))
@@ -106,6 +115,7 @@ class odd_scraper:
         return json.dumps(self.k)
 
     def print_it(self, league):
+        """ prints lines of the given league, must be valid key in dict k"""
         for i in sorted([i for i in self.k[league]]):
             print i
             for j in self.k[league][i]:
@@ -120,7 +130,7 @@ class odd_scraper:
 if __name__ == "__main__":
     scraper = odd_scraper()
     scraper.print_it('NBA')
-    scraper.to_json_file(direct=datetime.now().strftime("%Y_%m_%d_%H_%m"))
+    scraper.to_json_file(stamp=datetime.now().strftime("_%Y_%m_%d_%H_%M"))
 
 
 # All data sourced from scoresandodds.com this script and its creator makes no
