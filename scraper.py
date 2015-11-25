@@ -2,13 +2,17 @@ from bs4 import BeautifulSoup as bs
 import urllib2
 import json
 import re
+from datetime import datetime
 
 
 class odd_scraper:
 
     def __init__(self):
         url1 = 'http://www.scoresandodds.com/pfootballschedule_20140908_20180915_thisweek.html?sort=rot'
-        soup = bs(urllib2.urlopen(url1).read())
+        try:
+            soup = bs(urllib2.urlopen(url1).read(),'html5lib')
+        except:
+            soup = bs(urllib2.urlopen(url1).read(),'html5lib')
 
         q = soup.find(id='contents')
         w = q.find(class_='section')
@@ -95,7 +99,7 @@ class odd_scraper:
         return d
 
     def to_json_file(self, direct=''):
-        with open(direct+'lines.json', 'w') as f:
+        with open('lines'+direct+'.json', 'w') as f:
             json.dump(self.k, f, sort_keys=True, indent=4,
                 separators=(',', ': '))
 
@@ -118,6 +122,7 @@ class odd_scraper:
 if __name__ == "__main__":
     scraper = odd_scraper()
     scraper.print_it('NFL')
+    scraper.to_json_file(direct = datetime.now().strftime("%Y_%m_%d_%H_%m"))
 
 
 
