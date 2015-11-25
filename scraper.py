@@ -33,6 +33,7 @@ class odd_scraper:
 
     def make_games(self, table):
         x = [i.parent for i in table.tbody.find_all(class_='teamName')]
+        print x[0].contents
         games = []
         away = None
         for m, i in enumerate(x):

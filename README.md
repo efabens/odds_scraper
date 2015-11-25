@@ -1,10 +1,13 @@
 # odds_scraper
 
-Scrapes for football odds
+Scrapes for sports odds
+
+scraper.py creates a dictionary of today's odds
+
+football_scraper.py creates a dictionary of this weeks football odds
 
 ##Requirements
-Python 2.7+ (might be 3+ compatible, haven't tried)
-
+Python 2.7+ (Not 3 compatible, needs new url lib and print statements)
 Beautiful Soup 4
 
 ##json format
